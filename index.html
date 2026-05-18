@@ -393,9 +393,17 @@ const SB_URL = 'https://efbtmbehccomnfkhwnho.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVmYnRtYmVoY2NvbW5ma2h3bmhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNzk3NzUsImV4cCI6MjA5NDY1NTc3NX0.1xrCZzehQFN7B7DXZ3jGn_R6mjOGbS4PAvOVXC-qfFI';
 
 async function sbFetch(path, opts={}){
+  const baseHeaders = {
+    'apikey': SB_KEY,
+    'Authorization': 'Bearer ' + SB_KEY,
+    'Content-Type': 'application/json',
+    'Prefer': 'return=minimal'
+  };
+  const mergedHeaders = Object.assign({}, baseHeaders, opts.headers||{});
+  const {headers, ...restOpts} = opts;
   const res = await fetch(SB_URL+'/rest/v1/'+path, {
-    headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal',...(opts.headers||{})},
-    ...opts
+    headers: mergedHeaders,
+    ...restOpts
   });
   if(!res.ok){ const t=await res.text(); throw new Error(t); }
   const txt = await res.text();
