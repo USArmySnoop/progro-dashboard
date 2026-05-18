@@ -843,59 +843,80 @@ async function saveNote(){
 
 // ── PRINT REPORT ──────────────────────────────────────────────────────
 async function openPrintReport(){
-  document.getElementById('print-report-date').textContent='Irrigation Walk Report — May 18, 2026';
-  const body=document.getElementById('print-modal-body');
-  body.innerHTML='<div style="font-family:var(--font-mono);font-size:11px;color:var(--text3);padding:20px;">Loading data…</div>';
-  document.getElementById('print-modal-overlay').classList.add('open');
-  // Ensure fresh data
+  showToast('Loading report...','');
   try{
-    const adjs=await sbFetch('irr_adjustments?select=walk_date,room,zone,adjustment&order=walk_date.desc&limit=2000',{headers:{'Prefer':'return=representation'}});
+    var adjs=await sbFetch('irr_adjustments?select=walk_date,room,zone,adjustment&order=walk_date.desc&limit=2000',{headers:{'Prefer':'return=representation'}});
     adjCache={};
-    if(adjs) adjs.forEach(a=>{const k=a.room+'|'+a.zone;if(!adjCache[k])adjCache[k]=[];if(adjCache[k].length<7)adjCache[k].push({date:a.walk_date,val:a.adjustment});});
-    const notes=await sbFetch('irr_notes?select=id,note_date,room,zone,note&order=note_date.desc&limit=2000',{headers:{'Prefer':'return=representation'}});
+    if(adjs) adjs.forEach(function(a){var k=a.room+'|'+a.zone;if(!adjCache[k])adjCache[k]=[];if(adjCache[k].length<7)adjCache[k].push({date:a.walk_date,val:a.adjustment});});
+    var notes=await sbFetch('irr_notes?select=id,note_date,room,zone,note&order=note_date.desc&limit=2000',{headers:{'Prefer':'return=representation'}});
     noteCache={};
-    if(notes) notes.forEach(n=>{const k=n.room+'|'+n.zone;if(!noteCache[k])noteCache[k]=[];noteCache[k].push({id:n.id,date:n.note_date,text:n.note});});
+    if(notes) notes.forEach(function(n){var k=n.room+'|'+n.zone;if(!noteCache[k])noteCache[k]=[];noteCache[k].push({id:n.id,date:n.note_date,text:n.note});});
   }catch(e){showToast('Using cached data','');}
 
-  const activeRooms=ROOMS.filter(r=>!r.harvested&&r.current_day!==null);
-  let html='';
-  activeRooms.forEach(r=>{
-    const wk=Math.min(getWeekNum(r.current_day)-1,8);
-    const wd=IRR_WEEKS[wk];
-    html+=`<div class="print-report-room">
-      <div class="pr-room-head">
-        <span>${r.room} — Round ${r.round}</span>
-        <span class="pr-room-meta">Day ${r.current_day} · ${wd.week} · Expected: ${wd.feel}</span>
-      </div>`;
-    Object.entries(r.zones).forEach(([zk,zv])=>{
-      const hist=getAdjHistory(r.room,zk);
-      const notes=getNoteHistory(r.room,zk);
-      const todayAdj=getTodayAdj(r.room,zk);
-      html+=`<div class="pr-zone">
-        <div class="pr-zone-head">
-          <span class="pr-zone-name">${zk}</span>
-          <span class="pr-zone-strain">${zv}</span>
-        </div>
-        <div class="pr-adj-row">`;
+  var activeRooms=ROOMS.filter(function(r){return !r.harvested && r.current_day!==null;});
+  var roomsHtml='';
+
+  activeRooms.forEach(function(r){
+    var wk=Math.min(getWeekNum(r.current_day)-1,8);
+    var wd=IRR_WEEKS[wk];
+    var zonesHtml='';
+    Object.entries(r.zones).forEach(function(entry){
+      var zk=entry[0], zv=entry[1];
+      var hist=getAdjHistory(r.room,zk);
+      var zoneNotes=getNoteHistory(r.room,zk);
+      var chipsHtml='';
       if(hist.length){
-        hist.forEach(h=>{
-          const cls=h.val==='Hold'?'hold':h.val.startsWith('+')?'plus':'minus';
-          html+=`<span class="h-chip ${cls}">${fmtDateShort(h.date)} ${h.val}</span>`;
+        hist.forEach(function(h){
+          var bg=h.val==='Hold'?'#d4f5c4':(h.val.charAt(0)==='+' ?'#ddf0fb':'#fde8e6');
+          var col=h.val==='Hold'?'#1a7a00':(h.val.charAt(0)==='+' ?'#0070aa':'#c0392b');
+          chipsHtml+='<span style="background:'+bg+';color:'+col+';font-family:monospace;font-size:9px;padding:2px 6px;border-radius:2px;margin:1px 2px;">'+fmtDateShort(h.date)+' '+h.val+'</span>';
         });
-      } else { html+=`<span class="pr-no-data">No adjustments logged</span>`; }
-      html+='</div>';
-      if(notes.length){
-        html+=`<div class="pr-notes">`;
-        notes.slice(0,7).forEach(n=>{html+=`[${n.date}] ${n.text}
-`;});
-        html+=`</div>`;
+      } else {
+        chipsHtml='<em style="font-family:monospace;font-size:9px;color:#888;">No adjustments logged</em>';
       }
-      html+=`</div>`;
+      var notesHtml='';
+      if(zoneNotes.length){
+        var noteLines=zoneNotes.slice(0,7).map(function(n){return '['+n.date+'] '+n.text;}).join('\n');
+        notesHtml='<div style="margin-top:5px;padding:5px 8px;background:#fff;border:1px solid #dde1e7;border-radius:2px;font-family:monospace;font-size:9px;color:#555;white-space:pre-wrap;">'+noteLines+'</div>';
+      }
+      zonesHtml+='<div style="margin-bottom:8px;padding:8px 10px;border:1px solid #dde1e7;border-radius:2px;background:#f7f8fa;border-left:3px solid #a8daa0;">'
+        +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">'
+        +'<span style="font-family:monospace;font-size:9px;color:#888;">'+zk+'</span>'
+        +'<span style="font-size:11px;font-weight:700;text-transform:uppercase;color:#1a1a1a;">'+zv+'</span>'
+        +'</div>'
+        +'<div style="display:flex;flex-wrap:wrap;gap:2px;margin-bottom:3px;">'+chipsHtml+'</div>'
+        +notesHtml
+        +'</div>';
     });
-    html+=`</div>`;
+    roomsHtml+='<div style="margin-bottom:20px;page-break-inside:avoid;">'
+      +'<div style="display:flex;align-items:baseline;justify-content:space-between;border-bottom:2px solid #dde1e7;padding-bottom:4px;margin-bottom:8px;">'
+      +'<span style="font-size:15px;font-weight:700;color:#1a1a1a;">'+r.room+' - Round '+r.round+'</span>'
+      +'<span style="font-family:monospace;font-size:9px;color:#888;">Day '+r.current_day+' | '+wd.week+' | Expected: '+wd.feel+'</span>'
+      +'</div>'
+      +zonesHtml+'</div>';
   });
-  body.innerHTML=html||'<div style="font-family:var(--font-mono);font-size:11px;color:var(--text3);">No data to display.</div>';
+
+  var printHtml='<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>ProGro Walk Report</title>'
+    +'<style>*{box-sizing:border-box;margin:0;padding:0;}'
+    +'body{font-family:Helvetica,Arial,sans-serif;font-size:11px;color:#1a1a1a;padding:20px;background:#fff;}'
+    +'@media print{.noprint{display:none!important;}body{padding:10px;}}'
+    +'</style></head><body>'
+    +'<div style="border-bottom:3px solid #1a7a00;padding-bottom:10px;margin-bottom:16px;">'
+    +'<div style="font-size:17px;font-weight:700;">ProGro - Irrigation Walk Report</div>'
+    +'<div style="font-family:monospace;font-size:9px;color:#888;margin-top:3px;">May 18, 2026 | progrodashboard.netlify.app | Last 7 days per zone</div>'
+    +'</div>'
+    +'<div class="noprint" style="margin-bottom:14px;">'
+    +'<button onclick="window.print()" style="background:#0070aa;color:#fff;border:none;padding:7px 16px;border-radius:3px;font-size:12px;font-weight:700;cursor:pointer;margin-right:8px;">Print / Save PDF</button>'
+    +'<button onclick="window.close()" style="background:#eef0f3;color:#555;border:1px solid #dde1e7;padding:7px 12px;border-radius:3px;font-size:12px;cursor:pointer;">Close</button>'
+    +'</div>'
+    +roomsHtml
+    +'</body></html>';
+
+  var w=window.open('','_blank','width=900,height=700,scrollbars=yes');
+  if(w){w.document.write(printHtml);w.document.close();}
+  else{showToast('Allow popups for this site to print','err');}
 }
+
 function closePrintReport(){document.getElementById('print-modal-overlay').classList.remove('open');}
 
 // ── INIT ──────────────────────────────────────────────────────────────
