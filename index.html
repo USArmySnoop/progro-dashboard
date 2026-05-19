@@ -576,6 +576,23 @@ function roomAllZonesDone(r){
 }
 
 // ── DATA ─────────────────────────────────────────────────────────────
+const UPCOMING = {
+  W7:{"Day 58 (05/18)":["Harvest"],"Day 61 (05/21)":["Tier 2"],"Day 62 (05/22)":["Harvest"]},
+  E1:{"Day 58 (05/18)":["Harvest"],"Day 61 (05/21)":["Tier 2"],"Day 62 (05/22)":["Harvest"]},
+  W8:{"Day 8 (05/18)":["Azaguard"],"Day 10 (05/20)":["Tier 1"],"Day 11 (05/21)":["Power Si + Stack","Canopy Management"],"Day 12 (05/22)":["Lollipop / Canopy Management"],"Day 14 (05/24)":["C&M & Day 14 HW"],"Day 15 (05/25)":["Pluck #2"]},
+  E2:{"Day 40 (05/23)":["Zerotol"],"Day 42 (05/25)":["Pluck #2"],"Day 50 (06/02)":["Tier 2"]},
+  W9:{"Day 45 (05/19)":[],"Day 50 (05/24)":["Tier 2"],"Day 56 (05/30)":["Harvest"]},
+  E3:{"Day 8 (05/18)":["Azaguard"],"Day 10 (05/20)":["Tier 1"],"Day 11 (05/21)":["Power Si + Stack","Canopy Management"],"Day 12 (05/22)":["Lollipop / Canopy Management"],"Day 14 (05/24)":["C&M & Day 14 HW"],"Day 15 (05/25)":["Pluck #2"]},
+  W10:{"Day 51 (05/18)":["Tier 2"],"Day 56 (05/23)":["Harvest"]},
+  E4:{"Day 22 (05/18)":["Azaguard"],"Day 27 (05/23)":["Day 29 HW + CocoWet (1.5 Adj)"],"Day 35 (05/31)":["Canopy Management"],"Day 38 (06/03)":["Canopy Management"],"Day 40 (06/05)":["Zerotol"],"Day 42 (06/07)":["Pluck #2"]},
+  W11:{"Day 50 (05/24)":["Tier 2"],"Day 56 (05/30)":["Harvest"]},
+  W12:{"Day 28 (05/18)":["Day 29 HW + CocoWet (1.5 Adj)"],"Day 35 (05/25)":["Canopy Management"],"Day 38 (05/28)":["Canopy Management"],"Day 40 (05/30)":["Zerotol"],"Day 42 (06/01)":["Pluck #2"]},
+  E5:{"Day 15 (05/18)":["Pluck #2"],"Day 17 (05/20)":["Orius"],"Day 21 (05/24)":["Pluck #1 & Day 21 HW (+ RS)"],"Day 22 (05/25)":["Azaguard"]},
+  W13:{"Day 22 (05/18)":["Azaguard"],"Day 27 (05/23)":["Day 29 HW + CocoWet (1.5 Adj)"],"Day 35 (05/31)":["Canopy Management"],"Day 38 (06/03)":["Canopy Management"],"Day 40 (06/05)":["Zerotol"],"Day 42 (06/07)":["Pluck #2"]},
+  E6:{"Day 1 (5/18)":["Regalia"],"Day 3 (5/20)":["Azaguard"],"Day 4 (5/21)":["Trellis/Sticky Traps"],"Day 5 (5/22)":["C&M"],"Day 7 (5/24)":["Regalia"],"Day 9 (5/26)":["Azaguard"],"Day 10 (5/27)":["Tier 1"],"Day 11 (5/28)":["Power Si + Stack"],"Day 12 (5/29)":["Lollipop/Canopy Management"],"Day 14 (5/31)":["C&M & Day 14 HW"],"Day 17 (6/3)":["Orius"],"Day 19 (6/5)":["Tier 3"],"Day 20 (6/6)":["Zerotol"],"Day 21 (6/7)":["Pluck #1 & Day 21 HW (+ RS)"],"Day 24 (6/10)":["Swirskii"],"Day 26 (6/12)":["Canopy Management"],"Day 29 (6/15)":["Day 29 HW + CocoWet (1.5 Adj)"],"Day 38 (6/24)":["Canopy Management"],"Day 40 (6/26)":["Zerotol"],"Day 42 (6/28)":["Pluck #2"],"Day 43 (6/29)":["Day 43 HW"],"Day 45 (7/1)":["Seed Check"],"Day 47 (7/3)":["Day 50 Plan"],"Day 50 (7/6)":["Day 50 HW"],"Day 56 (7/12)":["Harvest"],"Day 57 (7/13)":["Day 57 HW"],"Day 60 (7/16)":["Zerotol"],"Day 61 (7/17)":["Tier 2"],"Day 62 (7/18)":["Harvest"]}
+};
+
+
 // Static room data — only update when round data changes (new strains, import/harvest dates)
 const ROOM_DATA = [
   {room:"W7",round:31,import_date:"2026-03-21",harvest_date:"2026-05-22",veg_dates:"03/03/26 - 03/20/26",zones:{"Zone 1":"MOONBOW #112","Zone 2":"MOONBOW #112"}},
@@ -635,8 +652,6 @@ function computeRooms(){
 
 // ROOMS is now computed at runtime
 var ROOMS = computeRooms();
-// Also keep a dummy array reference for backward compat (refreshed on init)
-];
 
 // Last event computed dynamically: find the most recent past event for each room
 function getLastEvent(roomId, current_day){
@@ -657,22 +672,6 @@ function getLastEvent(roomId, current_day){
   return best;
 }
 const STRESS_EVENTS=["pluck","lollipop","defoliat","canopy management"];
-
-const UPCOMING = {
-  W7:{"Day 58 (05/18)":["Harvest"],"Day 61 (05/21)":["Tier 2"],"Day 62 (05/22)":["Harvest"]},
-  E1:{"Day 58 (05/18)":["Harvest"],"Day 61 (05/21)":["Tier 2"],"Day 62 (05/22)":["Harvest"]},
-  W8:{"Day 8 (05/18)":["Azaguard"],"Day 10 (05/20)":["Tier 1"],"Day 11 (05/21)":["Power Si + Stack","Canopy Management"],"Day 12 (05/22)":["Lollipop / Canopy Management"],"Day 14 (05/24)":["C&M & Day 14 HW"],"Day 15 (05/25)":["Pluck #2"]},
-  E2:{"Day 40 (05/23)":["Zerotol"],"Day 42 (05/25)":["Pluck #2"],"Day 50 (06/02)":["Tier 2"]},
-  W9:{"Day 45 (05/19)":[],"Day 50 (05/24)":["Tier 2"],"Day 56 (05/30)":["Harvest"]},
-  E3:{"Day 8 (05/18)":["Azaguard"],"Day 10 (05/20)":["Tier 1"],"Day 11 (05/21)":["Power Si + Stack","Canopy Management"],"Day 12 (05/22)":["Lollipop / Canopy Management"],"Day 14 (05/24)":["C&M & Day 14 HW"],"Day 15 (05/25)":["Pluck #2"]},
-  W10:{"Day 51 (05/18)":["Tier 2"],"Day 56 (05/23)":["Harvest"]},
-  E4:{"Day 22 (05/18)":["Azaguard"],"Day 27 (05/23)":["Day 29 HW + CocoWet (1.5 Adj)"],"Day 35 (05/31)":["Canopy Management"],"Day 38 (06/03)":["Canopy Management"],"Day 40 (06/05)":["Zerotol"],"Day 42 (06/07)":["Pluck #2"]},
-  W11:{"Day 50 (05/24)":["Tier 2"],"Day 56 (05/30)":["Harvest"]},
-  W12:{"Day 28 (05/18)":["Day 29 HW + CocoWet (1.5 Adj)"],"Day 35 (05/25)":["Canopy Management"],"Day 38 (05/28)":["Canopy Management"],"Day 40 (05/30)":["Zerotol"],"Day 42 (06/01)":["Pluck #2"]},
-  E5:{"Day 15 (05/18)":["Pluck #2"],"Day 17 (05/20)":["Orius"],"Day 21 (05/24)":["Pluck #1 & Day 21 HW (+ RS)"],"Day 22 (05/25)":["Azaguard"]},
-  W13:{"Day 22 (05/18)":["Azaguard"],"Day 27 (05/23)":["Day 29 HW + CocoWet (1.5 Adj)"],"Day 35 (05/31)":["Canopy Management"],"Day 38 (06/03)":["Canopy Management"],"Day 40 (06/05)":["Zerotol"],"Day 42 (06/07)":["Pluck #2"]},
-  E6:{"Day 1 (5/18)":["Regalia"],"Day 3 (5/20)":["Azaguard"],"Day 4 (5/21)":["Trellis/Sticky Traps"],"Day 5 (5/22)":["C&M"],"Day 7 (5/24)":["Regalia"],"Day 9 (5/26)":["Azaguard"],"Day 10 (5/27)":["Tier 1"],"Day 11 (5/28)":["Power Si + Stack"],"Day 12 (5/29)":["Lollipop/Canopy Management"],"Day 14 (5/31)":["C&M & Day 14 HW"],"Day 17 (6/3)":["Orius"],"Day 19 (6/5)":["Tier 3"],"Day 20 (6/6)":["Zerotol"],"Day 21 (6/7)":["Pluck #1 & Day 21 HW (+ RS)"],"Day 24 (6/10)":["Swirskii"],"Day 26 (6/12)":["Canopy Management"],"Day 29 (6/15)":["Day 29 HW + CocoWet (1.5 Adj)"],"Day 38 (6/24)":["Canopy Management"],"Day 40 (6/26)":["Zerotol"],"Day 42 (6/28)":["Pluck #2"],"Day 43 (6/29)":["Day 43 HW"],"Day 45 (7/1)":["Seed Check"],"Day 47 (7/3)":["Day 50 Plan"],"Day 50 (7/6)":["Day 50 HW"],"Day 56 (7/12)":["Harvest"],"Day 57 (7/13)":["Day 57 HW"],"Day 60 (7/16)":["Zerotol"],"Day 61 (7/17)":["Tier 2"],"Day 62 (7/18)":["Harvest"]}
-};
 
 const IRR_WEEKS=[
   {week:"Week 1",days:"Days 0–6",feel:"Medium / Light",feelClass:"feel-medlight",note:"Just imported. Media still holding moisture from veg. Don't waterlog — let roots chase."},
